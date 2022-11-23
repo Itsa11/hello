@@ -1,0 +1,83 @@
+Assignment No.6
+Title : Object detection using Transfer Learning of CNN architectures Aim: Object detection using Transfer Learning of CNN architectures
+a. Load in a pre-trained CNN model trained on a large dataset
+b. Freeze parameters (weights) in model’s lower convolutional layers
+c. Add custom classifier with several layers of trainable parameters to model
+d. Train classifier layers on training data available for task
+e. Fine-tune hyper parameters and unfreeze more layers as needed
+Steps/ Algorithm
+1. Dataset link and libraries :
+https://data.caltech.edu/records/mzrjq-6wc02
+separate the data into training, validation, and testing sets with a 50%, 25%, 25% split and then structured the directories as follows:
+/datadir
+/train
+/class1
+/class2
+.
+.
+/valid
+/class1
+/class2
+.
+.
+/test
+/class1
+/class2
+.
+Libraries required :
+PyTorch
+torchvision import transforms
+torchvision import d atasets
+torch.utils.data import DataLoader torchvision import models torch.nn as nn
+torch import optim
+Ref: https://towardsdatascience.com/transfer-learning-with-convolutional-neural-networks-in- pytorch-dd09190245ce
+m) Prepare the dataset in splitting in three directories Train , alidation and test with 50 25 25
+n) Do pre-processing on data with transform from Pytorch Training dataset transformation as follows : transforms.Compose([
+transforms.RandomResizedCrop(size=256, scale=(0.8, 1.0)), transforms.RandomRotation(degrees=15), transforms.ColorJitter(), transforms.RandomHorizontalFlip(), transforms.CenterCrop(size=224), # Image net standards transforms.ToTensor(),
+transforms.Normalize([0.485, 0.456, 0.406],
+[0.229, 0.224, 0.225]) # Imagenet standards Validation Dataset transform as follows : transforms.Compose([
+transforms.Resize(size=256), transforms.CenterCrop(size=224), transforms.ToTensor(),
+transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+o) Create Datasets and Loaders : data = {
+'train':(Our name given to train data set dir created ) datasets.ImageFolder(root=traindir, transform=image_transforms['train']), 'valid':
+datasets.ImageFolder(root=validdir, transform=image_transforms['valid']),
+}
+dataloaders = {
+'train': DataLoader(data['train'], batch_size=batch_size, shuffle=True), 'val': DataLoader(data['valid'], batch_size=batch_size, shuffle=True)
+}
+p) Load Pretrain Model : from torchvision import models
+model = model.vgg16(pretrained=True)
+q) Freez all the Models Weight
+for param in model.parameters(): param.requires_grad = False
+r) Add our own custom classifier with following parameters : Fully connected with ReLU activation, shape = (n_inputs, 256) Dropout with 40% chance of dropping
+Fully connected with log softmax output, shape = (256, n_classes) import torch.nn as nn
+# Add on classifier model.classifier[6] = nn.Sequential(
+nn.Linear(n_inputs, 256), nn.ReLU(),
+nn.Dropout(0.4), nn.Linear(256, n_classes), nn.LogSoftmax(dim=1))
+s) Only train the sixth layer of classifier keep remaining layers off . Sequential(
+(0): Linear(in_features=25088, out_features=4096, bias=True) (1): ReLU(inplace)
+(2) : Dropout(p=0.5)
+(3) : Linear(in_features=4096, out_features=4096, bias=True) (4): ReLU(inplace)
+(5) : Dropout(p=0.5)
+(6) : Sequential(
+(0): Linear(in_features=4096, out_features=256, bias=True) (1): ReLU()
+(2) : Dropout(p=0.4)
+(3) : Linear(in_features=256, out_features=100, bias=True) (4): LogSoftmax()
+)
+)
+t) Initialize the loss and optimizer criteration = nn.NLLLoss()
+optimizer = optim.Adam(model.parameters())
+u) Train the model using Pytorch for epoch in range(n_epochs): for data, targets in trainloader:
+# Generate predictions out = model(data)
+# Calculate loss
+loss = criterion(out, targets) # Backpropagation loss.backward()
+# Update model parameters optimizer.step()
+v) Perform Early stopping
+w) Draw performance curve
+x) Calculate Accuracy
+pred = torch.max(ps, dim=1) equals = pred == targets
+# Calculate accuracy
+accuracy = torch.mean(equals)
+Sample Code with comments : Attach Printout with Output .
+Conclusion: The main benefits of transfer learning include the saving of resources and improved efficiency when training new models. It can also help with training models when only unlabelled datasets are available, as the bulk of the model will be pre-trained.
+https://www.google.com/url?q=https://towardsdatascience.com/transfer-learning-with- convolutional-neural-networks-in-pytorch-dd0
